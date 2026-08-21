@@ -1,3 +1,38 @@
+// Sticky menu
+let newScrollPosition = 0;
+let lastScrollPosition;
+const header = document.getElementById("js-header");
+const stickyMenu = document.getElementById("js-navbar-menu");
+
+window.addEventListener('scroll', () => {
+    lastScrollPosition = window.scrollY;
+
+    // Scrolling down
+    if (newScrollPosition < lastScrollPosition && lastScrollPosition > 90) {
+        header.classList.remove("is-visible");
+        header.classList.add("is-hidden");
+
+        // Scrolling up
+    } else if (newScrollPosition > lastScrollPosition && lastScrollPosition > 89) {
+        header.classList.remove("is-hidden");
+        header.classList.add("is-visible");
+        if (stickyMenu) {
+            stickyMenu.classList.add("is-sticky");
+        }
+    }
+
+    if (lastScrollPosition < 1) {
+        header.classList.remove("is-visible");
+
+        if (stickyMenu) {
+            stickyMenu.classList.remove("is-sticky");
+        }
+    }
+
+    newScrollPosition = lastScrollPosition;
+});
+
+
 // Dropdown menu
 (function (menuConfig) {
   /**
@@ -610,27 +645,109 @@ function initSubmenuPositions() {
   init();
 })(window.publiiThemeMenuConfig);
 
-// Back to top 
-const backToTopButton = document.getElementById("backToTop");
+// Share buttons pop-up
+(function () {
+    // share popup
+    const shareButton = document.querySelector('.js-content__share-button');
+    const sharePopup = document.querySelector('.js-content__share-popup');
 
-if (backToTopButton) {
-    window.addEventListener('scroll', () => {
-        if (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) {
-            backToTopButton.classList.add("is-visible");
-        } else {
-            backToTopButton.classList.remove("is-visible");
+    if (shareButton && sharePopup) {
+        sharePopup.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+
+        shareButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            sharePopup.classList.toggle('is-visible');
+        });
+
+        document.body.addEventListener('click', function () {
+            sharePopup.classList.remove('is-visible');
+        });
+    }
+
+    // link selector and pop-up window size
+    const Config = {
+        Link: ".js-share",
+        Width: 500,
+        Height: 500
+    };
+
+    // add handler to links
+    const shareLinks = document.querySelectorAll(Config.Link);
+    shareLinks.forEach(link => {
+        link.addEventListener('click', PopupHandler);
+    });
+
+    // create popup
+    function PopupHandler(e) {
+        e.preventDefault();
+
+        const target = e.target.closest(Config.Link);
+        if (!target) return;
+
+        // hide share popup
+        if (sharePopup) {
+            sharePopup.classList.remove('is-visible');
+        }
+
+        // popup position
+        const px = Math.floor((window.innerWidth - Config.Width) / 2);
+        const py = Math.floor((window.innerHeight - Config.Height) / 2);
+
+        // open popup
+        const linkHref = target.href;
+        const popup = window.open(linkHref, "social", `
+            width=${Config.Width},
+            height=${Config.Height},
+            left=${px},
+            top=${py},
+            location=0,
+            menubar=0,
+            toolbar=0,
+            status=0,
+            scrollbars=1,
+            resizable=1
+        `);
+
+        if (popup) {
+            popup.focus();
+        }
+    }
+})();
+
+// Load search input area
+const searchButton = document.querySelector('.js-search-btn');
+const searchOverlay = document.querySelector('.js-search-overlay');
+const searchInput = document.querySelector('[type="search"]');
+
+if (searchButton) {
+    searchButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        searchOverlay.classList.toggle('expanded');
+
+        if (searchInput) {
+            setTimeout(() => {
+                if (searchOverlay.classList.contains('expanded')) {
+                    searchInput.focus();
+                }
+            }, 60);
         }
     });
 
-    backToTopButton.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    searchOverlay.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    document.body.addEventListener('click', () => {
+        searchOverlay.classList.remove('expanded');
     });
 }
 
-/**
- * Responsive embeds script
- */
- (function () {
+
+// Responsive embeds script
+(function () {
 	let wrappers = document.querySelectorAll('.post__video, .post__iframe');
 
 	for (let i = 0; i < wrappers.length; i++) {
@@ -667,190 +784,4 @@ if (backToTopButton) {
 			wrappers[i].setAttribute('style', '--embed-aspect-ratio:' + ratioValue);
 		}
 	}
-})();
-
-// Share buttons pop-up
-(function () {
-	// share popup
-	const shareButton = document.querySelector('.js-content__share-button');
-	const sharePopup = document.querySelector('.js-content__share-popup');
-
-	if (shareButton && sharePopup) {
-		 sharePopup.addEventListener('click', function (e) {
-			  e.stopPropagation();
-		 });
-
-		 shareButton.addEventListener('click', function (e) {
-			  e.preventDefault();
-			  e.stopPropagation();
-			  sharePopup.classList.toggle('is-visible');
-		 });
-
-		 document.body.addEventListener('click', function () {
-			  sharePopup.classList.remove('is-visible');
-		 });
-	}
-
-	// link selector and pop-up window size
-	const Config = {
-		 Link: ".js-share",
-		 Width: 500,
-		 Height: 500
-	};
-
-	// add handler to links
-	const shareLinks = document.querySelectorAll(Config.Link);
-	shareLinks.forEach(link => {
-		 link.addEventListener('click', PopupHandler);
-	});
-
-	// create popup
-	function PopupHandler(e) {
-		 e.preventDefault();
-
-		 const target = e.target.closest(Config.Link);
-		 if (!target) return;
-
-		 // hide share popup
-		 if (sharePopup) {
-			  sharePopup.classList.remove('is-visible');
-		 }
-
-		 // popup position
-		 const px = Math.floor((window.innerWidth - Config.Width) / 2);
-		 const py = Math.floor((window.innerHeight - Config.Height) / 2);
-
-		 // open popup
-		 const linkHref = target.href;
-		 const popup = window.open(linkHref, "social", `
-			  width=${Config.Width},
-			  height=${Config.Height},
-			  left=${px},
-			  top=${py},
-			  location=0,
-			  menubar=0,
-			  toolbar=0,
-			  status=0,
-			  scrollbars=1,
-			  resizable=1
-		 `);
-
-		 if (popup) {
-			  popup.focus();
-		 }
-	}
-})();
-
-
-// Search
-const searchButton = document.querySelector('.js-search-btn');
-const searchOverlay = document.querySelector('.js-search-overlay');
-const searchInput = document.querySelector('.search__input');
-
-if (searchButton && searchOverlay) {
-    searchButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        searchOverlay.classList.toggle('expanded');
-
-        if (searchInput) {
-            setTimeout(() => {
-                if (searchOverlay.classList.contains('expanded')) {
-                    searchInput.focus();
-                }
-            }, 60);
-        }
-    });
-
-    searchOverlay.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-
-    document.body.addEventListener('click', () => {
-        searchOverlay.classList.remove('expanded');
-    });
-}
-
-/**
- * Layout switcher
- */
- (function () {
-   let layoutButtons = document.querySelectorAll('.switchers__item');
-   let contentWrapper = document.querySelector('.l-grid');
-   let articles;
-
-   if (contentWrapper) {
-      articles = contentWrapper.querySelectorAll('.c-card');
-   }
-
-   if (!contentWrapper || !layoutButtons.length || (articles && !articles.length)) {
-      return;
-   }
-
-   let gridBtn = layoutButtons[0];
-   let rowsBtn = layoutButtons[1];
-
-   gridBtn.addEventListener('click', e => {
-      e.preventDefault();
-      if (!gridBtn.classList.contains('is-active')) {
-         setGridLayout();
-      }
-   });
-
-   rowsBtn.addEventListener('click', e => {
-      e.preventDefault();
-      if (!rowsBtn.classList.contains('is-active')) {
-         setRowsLayout();
-      }
-   });
-
-   function setGridLayout () {
-      gridBtn.classList.add('is-active');
-      rowsBtn.classList.remove('is-active');
-      gridBtn.setAttribute('aria-pressed', 'true');
-      rowsBtn.setAttribute('aria-pressed', 'false');
-      contentWrapper.classList.remove('l-grid--1');
-      articles = contentWrapper.querySelectorAll('.c-card');
-      for (let i = 0; i < articles.length; i++) {
-         articles[i].classList.remove('c-card--rows');
-      }
-      localStorage.setItem('persona-theme-selected-layout', 'grid');	
-      resetIsotopeLayout();
-   }
-
-   function setRowsLayout () {
-      gridBtn.classList.remove('is-active');
-      rowsBtn.classList.add('is-active');
-      gridBtn.setAttribute('aria-pressed', 'false');
-      rowsBtn.setAttribute('aria-pressed', 'true');
-      contentWrapper.classList.add('l-grid--1');
-      articles = contentWrapper.querySelectorAll('.c-card');
-      for (let i = 0; i < articles.length; i++) {
-         articles[i].classList.add('c-card--rows');
-      }
-      localStorage.setItem('persona-theme-selected-layout', 'rows');
-      resetIsotopeLayout();
-   }
-
-   function resetIsotopeLayout () {
-      if (window.personaThemeIsotopeInstance) {
-         if (document.querySelector('.filter__item.is-active')) {
-            window.personaThemeIsotopeInstance.arrange({
-               filter: document.querySelector('.filter__item.is-active').getAttribute('data-filter')
-            });
-         } else {
-            window.personaThemeIsotopeInstance.arrange();
-         }
-      }
-   }
-
-   window.addEventListener("DOMContentLoaded", function () {
-      setTimeout(() => {
-         let savedLayout = localStorage.getItem('persona-theme-selected-layout');
-         if (savedLayout === 'grid' || !savedLayout) {
-            setGridLayout();
-         } else if (savedLayout === 'rows') {
-            setRowsLayout();
-         }
-      }, 0);
-   });
 })();
